@@ -88,6 +88,7 @@ export default class GooglePlacesAutocomplete extends Component {
     text: this.props.getDefaultValue(),
     dataSource: this.buildRowsFromResults([]),
     listViewDisplayed: this.props.listViewDisplayed === 'auto' ? false : this.props.listViewDisplayed,
+    loadingRequest: false
   })
 
   setAddressText = address => this.setState({ text: address })
@@ -282,6 +283,8 @@ export default class GooglePlacesAutocomplete extends Component {
         }
       };
 
+      this.setState({ loading: true });
+
       request.open('GET', 'https://maps.googleapis.com/maps/api/place/details/json?' + Qs.stringify({
         key: this.props.query.key,
         placeid: rowData.place_id,
@@ -327,6 +330,7 @@ export default class GooglePlacesAutocomplete extends Component {
         rows[i].isLoading = true;
         this.setState({
           dataSource: rows,
+          loadingRequest: false
         });
         break;
       }
@@ -343,6 +347,7 @@ export default class GooglePlacesAutocomplete extends Component {
 
       this.setState({
         dataSource: this.buildRowsFromResults(this._results),
+        loadingRequest: false
       });
     }
   }
@@ -452,6 +457,7 @@ export default class GooglePlacesAutocomplete extends Component {
       this._results = [];
       this.setState({
         dataSource: this.buildRowsFromResults([]),
+        loadingRequest: false
       });
     }
   }
@@ -479,6 +485,7 @@ export default class GooglePlacesAutocomplete extends Component {
               this._results = results;
               this.setState({
                 dataSource: this.buildRowsFromResults(results),
+                loadingRequest: false
               });
             }
           }
@@ -506,6 +513,7 @@ export default class GooglePlacesAutocomplete extends Component {
       this._results = [];
       this.setState({
         dataSource: this.buildRowsFromResults([]),
+        loadingRequest: false
       });
     }
   }
@@ -522,6 +530,7 @@ export default class GooglePlacesAutocomplete extends Component {
     this.setState({
       text: text,
       listViewDisplayed: this._isMounted || this.props.autoFocus,
+      loadingRequest: true
     });
   }
 
@@ -542,6 +551,7 @@ export default class GooglePlacesAutocomplete extends Component {
       <ActivityIndicator
         animating={true}
         size="small"
+        {...this.props.activityIndicatorProps}
       />
     );
   }
@@ -672,6 +682,10 @@ export default class GooglePlacesAutocomplete extends Component {
   }
 
   _getFlatList = () => {
+  	if (this.state.loadingRequest) {
+      return this._getRowLoader();
+    }
+
     const keyGenerator = () => (
       Math.random().toString(36).substr(2, 10)
     );
@@ -784,7 +798,8 @@ GooglePlacesAutocomplete.propTypes = {
   suppressDefaultStyles: PropTypes.bool,
   numberOfLines: PropTypes.number,
   onSubmitEditing: PropTypes.func,
-  editable: PropTypes.bool
+  editable: PropTypes.bool,
+  activityIndicatorProps: PropTypes.object
 }
 GooglePlacesAutocomplete.defaultProps = {
   placeholder: 'Search',
@@ -832,7 +847,8 @@ GooglePlacesAutocomplete.defaultProps = {
   suppressDefaultStyles: false,
   numberOfLines: 1,
   onSubmitEditing: () => {},
-  editable: true
+  editable: true,
+  activityIndicatorProps: {}
 }
 
 // this function is still present in the library to be retrocompatible with version < 1.1.0
