@@ -126,7 +126,7 @@ export default class GooglePlacesAutocomplete extends Component {
   componentDidMount() {
     // This will load the default value's search results after the view has
     // been rendered
-    this._handleChangeText(this.state.text);
+    this._handleChangeText(this.state.text, onMount = true);
     this._isMounted = true;
   }
 
@@ -524,18 +524,18 @@ export default class GooglePlacesAutocomplete extends Component {
     })
   }
 
-  _onChangeText = (text) => {
+  _onChangeText = (text, onMount = false) => {
     this._request(text);
 
     this.setState({
       text: text,
       listViewDisplayed: this._isMounted || this.props.autoFocus,
-      loadingRequest: true
+      loadingRequest: onMount ? false : true
     });
   }
 
-  _handleChangeText = (text) => {
-    this._onChangeText(text);
+  _handleChangeText = (text, onMount = false) => {
+    this._onChangeText(text, onMount);
 
     const onChangeText = this.props
       && this.props.textInputProps
@@ -548,11 +548,14 @@ export default class GooglePlacesAutocomplete extends Component {
 
   _getRowLoader() {
     return (
-      <ActivityIndicator
+      <View style={[this.props.suppressDefaultStyles ? {} : defaultStyles.loader, this.props.styles.loader]}>
+            <ActivityIndicator
         animating={true}
         size="small"
         {...this.props.activityIndicatorProps}
       />
+    </View>
+
     );
   }
 
@@ -580,11 +583,7 @@ export default class GooglePlacesAutocomplete extends Component {
 
   _renderLoader = (rowData) => {
     if (rowData.isLoading === true) {
-      return (
-        <View style={[this.props.suppressDefaultStyles ? {} : defaultStyles.loader, this.props.styles.loader]}>
-          {this._getRowLoader()}
-        </View>
-      );
+      return this._getRowLoader()
     }
 
     return null;
